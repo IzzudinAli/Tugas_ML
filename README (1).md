@@ -256,8 +256,8 @@ if st.button("🔮 Estimasi Nilai Jual Hunian", type="primary"):
     
     # Menampilkan hasil estimasi akhir kepada pengguna
     st.success(f"### 💵 Estimasi Nilai Hunian: **${prediction:,.2f}**")
-
-# Kesimpulan Akhir
+```
+### Kesimpulan Akhir
 
 Proyek ini berhasil membangun model machine learning untuk memprediksi nilai hunian di California berdasarkan faktor geografis dan sosial ekonomi. Hasil analisis menunjukkan bahwa pendapatan median (`median_income`) dan kedekatan terhadap laut (`ocean_proximity`) merupakan faktor yang paling berpengaruh terhadap nilai rumah.
 
