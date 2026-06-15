@@ -196,7 +196,7 @@ R-squared Score (R2 Score)     : 0.8203 (82.03%)
 
 Visualisasi **Actual vs Predicted** menunjukkan sebagian besar titik data berada di sekitar garis diagonal (`y = x`). Hal ini mengindikasikan bahwa model memiliki kemampuan prediksi yang cukup baik dan tidak menunjukkan bias sistematis yang signifikan.
 
-> Hasil visualisasi dapat dilihat pada notebook proyek.
+![Evaluasi Model](assets/evaluasi.png)
 
 ## 5.3 Perbandingan Model
 
