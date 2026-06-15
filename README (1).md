@@ -51,7 +51,7 @@ df = pd.read_csv('housing.csv')
 ```
 
 ## 2.2 Exploratory Data Analysis (EDA)
-![DESKRIPSI GAMBAR](assets/"Exploratory Data Analysis.png")
+![Exploratory Data Analysis](assets/Exploratory%20Data%20Analysis.png)
 Beberapa analisis eksplorasi dilakukan untuk memahami karakteristik data.
 
 ### Peta Geografis
