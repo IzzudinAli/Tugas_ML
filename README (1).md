@@ -1,337 +1,281 @@
-# Laporan Proyek Machine Learning - [Izzudin Ali]
+# Laporan Proyek Machine Learning: Prediksi Nilai Hunian Berdasarkan Faktor Geografis dan Sosial Ekonomi
 
-## Domain Proyek
-
-### Latar Belakang
-
-Sektor properti dan hunian merupakan salah satu indikator penting dalam perekonomian suatu negara. Nilai hunian tidak hanya ditentukan oleh kondisi fisik bangunan, namun sangat dipengaruhi oleh faktor-faktor geografis dan sosial ekonomi yang melingkupinya. Faktor-faktor seperti lokasi administratif, kedekatan dengan pusat kota, tingkat pendapatan masyarakat sekitar, kepadatan penduduk, serta akses terhadap fasilitas publik terbukti memiliki korelasi yang signifikan terhadap harga properti di suatu wilayah.
-
-Di Indonesia, ketimpangan nilai hunian antarwilayah masih tergolong tinggi. Kawasan perkotaan dengan infrastruktur memadai cenderung memiliki nilai hunian jauh lebih tinggi dibanding kawasan pinggiran atau perdesaan, meskipun secara fisik bangunan memiliki kualitas yang setara. Pemahaman terhadap faktor-faktor penentu nilai hunian ini menjadi krusial bagi berbagai pemangku kepentingan, mulai dari pengembang properti, pemerintah daerah dalam perencanaan tata ruang, hingga masyarakat umum yang ingin membuat keputusan investasi properti yang tepat.
-
-### Masalah yang Harus Diselesaikan
-
-Berdasarkan data yang menunjukkan bahwa lebih dari 60% keputusan pembelian properti di Indonesia kurang mempertimbangkan faktor geografis dan sosial ekonomi secara komprehensif, diperlukan sebuah pendekatan berbasis data untuk menganalisis dan memprediksi nilai hunian secara lebih akurat. Dengan memanfaatkan teknik machine learning, analisis ini diharapkan dapat memberikan gambaran yang lebih objektif mengenai faktor-faktor apa saja yang paling berpengaruh terhadap nilai hunian di suatu wilayah.
-
-Format Referensi: [Indeks Harga Properti Residensial - Bank Indonesia](https://www.bi.go.id/id/publikasi/laporan/Pages/IHPR-Triwulan-IV-2023.aspx)
+**Nama:** Izzudin Ali, J. Rifky
+**NIM:** 2330511040, 233051196
+**Dataset:** California Housing Prices Dataset
+**Metodologi:** CRISP-DM
 
 ---
 
-## Business Understanding
+# 1. Business Understanding
 
-### Problem Statements
+## 1.1 Problem Statements
 
-1. Faktor geografis dan sosial ekonomi apa saja yang paling berpengaruh terhadap nilai hunian di suatu wilayah?
-2. Bagaimana cara membangun model prediktif yang akurat untuk memperkirakan nilai hunian berdasarkan fitur-fitur geografis dan sosial ekonomi yang tersedia?
-3. Apakah terdapat pola atau kluster wilayah yang dapat diidentifikasi berdasarkan kesamaan profil geografis, sosial ekonomi, dan nilai huniannya?
+Berdasarkan latar belakang perumahan di California, proyek ini bertujuan untuk menjawab pertanyaan-pertanyaan berikut:
 
-### Goals
+1. Faktor geografis dan sosial ekonomi apa yang paling memengaruhi nilai hunian?
+2. Bagaimana membangun model prediksi nilai hunian yang akurat?
+3. Seberapa baik performa model machine learning dalam memprediksi nilai hunian?
 
-- Mengidentifikasi dan menganalisis faktor-faktor geografis (seperti koordinat lokasi, kedekatan dengan pusat kota, dan ketinggian wilayah) serta faktor sosial ekonomi (seperti median pendapatan, kepadatan penduduk, dan tingkat pengangguran) yang memiliki pengaruh signifikan terhadap nilai hunian.
-- Mengembangkan model machine learning yang dapat memprediksi nilai hunian secara akurat berdasarkan fitur-fitur yang telah diidentifikasi.
-- Menghasilkan wawasan yang dapat digunakan oleh pemangku kepentingan untuk pengambilan keputusan terkait investasi dan perencanaan properti.
+## 1.2 Goals
 
-### Solution Statements
+Tujuan dari proyek ini adalah:
 
-Menggunakan algoritma **XGBoost Regressor** (*Extreme Gradient Boosting*) untuk memprediksi nilai hunian berdasarkan fitur-fitur geografis dan sosial ekonomi. XGBoost dipilih karena kemampuannya menangani hubungan non-linear antarvariabel, ketahanannya terhadap overfitting melalui mekanisme regularisasi bawaan (L1 dan L2), serta performanya yang terbukti unggul pada data tabular.
+* Mengidentifikasi faktor-faktor yang berpengaruh signifikan terhadap nilai hunian.
+* Membangun model prediksi nilai hunian yang akurat menggunakan algoritma Machine Learning.
+* Mengevaluasi performa model menggunakan metrik RMSE, MAE, dan R².
 
-Evaluasi model akan menggunakan metrik **RMSE (Root Mean Squared Error)**, **MAE (Mean Absolute Error)**, dan **R² Score** untuk memastikan model memberikan prediksi yang relevan dan akurat.
+## 1.3 Solution Statements
+
+Solusi yang diusulkan adalah membangun dan membandingkan beberapa model regresi:
+
+* Linear Regression (Model Baseline)
+* Random Forest Regressor (Model Ensemble)
+* XGBoost Regressor (Model Gradient Boosting)
+* LightGBM Regressor (Model Gradient Boosting)
+
+**Pemilihan Model Terbaik:** Model dengan nilai RMSE terkecil dan R² Score terbesar akan dipilih sebagai model final.
 
 ---
 
-## Data Understanding
+# 2. Data Understanding
 
-Dataset yang digunakan dalam proyek ini berisi informasi mengenai karakteristik geografis dan sosial ekonomi berbagai wilayah, beserta nilai median hunian di masing-masing wilayah tersebut.
+## 2.1 Data Loading
 
-Sumber dataset: [Kaggle - California Housing Prices Dataset](https://www.kaggle.com/datasets/camnugent/california-housing-prices)
+Dataset yang digunakan adalah **California Housing Prices Dataset** yang tersedia secara publik. Dataset ini berisi informasi mengenai distrik blok sensus di California berdasarkan data Sensus Amerika Serikat tahun 1990.
 
-### Informasi Dataset
+```python
+import pandas as pd
 
-- **Jumlah data**: Dataset ini terdiri dari **20.640 baris** dan **10 kolom**.
-- **Kondisi data**:
-  - *Missing values*: Terdapat 207 nilai yang hilang pada kolom `total_bedrooms`, yang selanjutnya ditangani dengan imputasi median.
-  - *Duplikat*: Tidak ditemukan data duplikat setelah pengecekan menggunakan `duplicated().sum()`.
-  - *Outlier*: Beberapa fitur seperti `median_income` dan `median_house_value` memiliki nilai ekstrim yang teridentifikasi melalui visualisasi box plot dan metode IQR.
-
-### Fitur pada Dataset
-
-| Fitur | Deskripsi |
-|---|---|
-| `longitude` | Koordinat bujur lokasi blok perumahan |
-| `latitude` | Koordinat lintang lokasi blok perumahan |
-| `housing_median_age` | Median usia bangunan di blok tersebut (tahun) |
-| `total_rooms` | Total jumlah ruangan dalam satu blok |
-| `total_bedrooms` | Total jumlah kamar tidur dalam satu blok |
-| `population` | Jumlah penduduk dalam satu blok |
-| `households` | Jumlah rumah tangga dalam satu blok |
-| `median_income` | Median pendapatan rumah tangga (dalam puluhan ribu USD) |
-| `median_house_value` | Median nilai hunian (target/label, dalam USD) |
-| `ocean_proximity` | Kategori kedekatan dengan laut (fitur geografis kategorikal) |
-
-### Exploratory Data Analysis (EDA)
-
-Sebelum masuk ke tahap pemodelan, dilakukan eksplorasi data untuk memahami distribusi dan hubungan antarvariabel.
-
-**Distribusi Variabel Numerik**:
-- **Distribusi Median Income**: Distribusi cenderung right-skewed, dengan sebagian besar rumah tangga memiliki pendapatan rendah hingga menengah. Terdapat beberapa nilai ekstrim di kisaran pendapatan tinggi.
-- **Distribusi Median House Value**: Distribusi menunjukkan adanya *clipping* pada nilai maksimum (500.000 USD), yang mengindikasikan adanya data yang dicap pada batas tertentu.
-- **Distribusi Housing Median Age**: Distribusi relatif merata, dengan konsentrasi pada usia bangunan 10–52 tahun.
-- **Distribusi Population**: Sangat right-skewed, dengan sebagian besar blok memiliki populasi rendah namun beberapa blok memiliki populasi sangat tinggi.
-
-```
-# Contoh output visualisasi distribusi fitur
-housing_data[['median_income', 'median_house_value', 
-              'housing_median_age', 'population']].hist(bins=50, figsize=(12, 8))
-plt.suptitle('Distribusi Fitur Numerik')
-plt.tight_layout()
-plt.savefig('distribusi_fitur.png')
+df = pd.read_csv('housing.csv')
 ```
 
-![Distribusi Fitur](https://via.placeholder.com/800x400?text=Histogram+Distribusi+Fitur+Numerik)
+## 2.2 Exploratory Data Analysis (EDA)
+![DESKRIPSI GAMBAR](assets/"Exploratory Data Analysis.png")
+Beberapa analisis eksplorasi dilakukan untuk memahami karakteristik data.
 
-**Analisis Korelasi**:
-- Terdapat korelasi positif yang kuat antara `median_income` dan `median_house_value` (r = 0.688), mengkonfirmasi bahwa pendapatan masyarakat merupakan prediktor terkuat nilai hunian.
-- Fitur geografis `longitude` dan `latitude` juga menunjukkan korelasi yang berarti, mengindikasikan adanya pengaruh lokasi terhadap nilai properti.
+### Peta Geografis
 
-![Heatmap Korelasi](https://via.placeholder.com/700x600?text=Heatmap+Korelasi+Antarvariabel)
+Visualisasi koordinat geografis (`longitude` dan `latitude`) menunjukkan bahwa nilai hunian cenderung lebih tinggi pada wilayah pesisir California dan lebih rendah pada wilayah pedalaman.
 
-**Distribusi Spasial**:
-Visualisasi peta sebaran nilai hunian berdasarkan koordinat geografis menunjukkan konsentrasi nilai hunian tertinggi di kawasan pesisir dan perkotaan, sementara wilayah pedalaman cenderung memiliki nilai hunian yang lebih rendah.
+### Hubungan Sosial Ekonomi
 
-![Peta Sebaran](https://via.placeholder.com/800x500?text=Peta+Sebaran+Nilai+Hunian+Berdasarkan+Lokasi)
+Visualisasi hubungan antara `median_income` dan `median_house_value` menunjukkan korelasi positif yang kuat. Semakin tinggi pendapatan median suatu wilayah, semakin tinggi pula nilai hunian pada wilayah tersebut.
 
----
-
-## Data Preparation
-
-Proses persiapan data yang dilakukan mencakup langkah-langkah berikut:
-
-1. **Penanganan Missing Values**: Kolom `total_bedrooms` yang memiliki 207 nilai kosong diisi menggunakan nilai median kolom tersebut. Pendekatan imputasi median dipilih karena distribusi kolom ini bersifat right-skewed sehingga lebih tahan terhadap pengaruh outlier dibandingkan imputasi mean.
-
-2. **Feature Engineering**: Dibuat beberapa fitur turunan untuk meningkatkan representasi data:
-   - `rooms_per_household` = `total_rooms` / `households`
-   - `bedrooms_per_room` = `total_bedrooms` / `total_rooms`
-   - `population_per_household` = `population` / `households`
-
-3. **Encoding Fitur Kategorikal**: Fitur `ocean_proximity` yang bersifat kategorikal diubah menggunakan teknik *One-Hot Encoding*, menghasilkan lima kolom biner baru yang merepresentasikan setiap kategori kedekatan dengan laut.
-
-4. **Penanganan Outlier**: Outlier pada fitur `total_rooms`, `total_bedrooms`, dan `population` ditangani menggunakan metode *capping* berdasarkan persentil ke-1 dan ke-99 untuk menghindari hilangnya data secara berlebihan.
-
-5. **Normalisasi Fitur**: Fitur-fitur numerik dinormalisasi menggunakan `StandardScaler` dari `sklearn.preprocessing` agar semua fitur berada dalam skala yang seragam (mean = 0, std = 1). Langkah ini penting terutama untuk model yang sensitif terhadap skala fitur.
-
-6. **Pembagian Data**: Dataset dibagi menjadi data pelatihan (80%) dan data pengujian (20%) menggunakan `train_test_split` dengan parameter `random_state=42` untuk memastikan reproduktibilitas hasil.
-
-**Alasan Data Preparation**:
-Setiap langkah preparation di atas dilakukan dengan tujuan meningkatkan kualitas data yang dimasukkan ke dalam model. Penanganan missing values mencegah error saat training, feature engineering menambah informasi kontekstual yang relevan, encoding memungkinkan model memproses fitur kategorikal, sedangkan normalisasi memastikan tidak ada fitur yang mendominasi proses pembelajaran model secara tidak proporsional.
+> Hasil visualisasi dapat dilihat pada notebook proyek.
 
 ---
 
-## Model Development
+# 3. Data Preparation
 
-Pada proyek ini, digunakan algoritma **XGBoost Regressor** (*Extreme Gradient Boosting*) untuk tugas regresi prediksi nilai hunian.
+Tahap ini bertujuan untuk membersihkan dan mempersiapkan data sebelum digunakan dalam proses pelatihan model.
 
-### XGBoost Regressor
+## 3.1 Handling Missing Values
 
-XGBoost adalah algoritma ensemble berbasis *boosting* yang membangun pohon keputusan secara sekuensial, di mana setiap pohon baru berusaha memperbaiki kesalahan residual dari pohon sebelumnya menggunakan teknik *gradient descent*. Berbeda dengan Random Forest yang membangun pohon secara paralel (*bagging*), XGBoost bersifat iteratif sehingga lebih efisien dalam meminimalkan fungsi loss secara bertahap.
+Kolom `total_bedrooms` memiliki beberapa nilai kosong (missing values). Nilai tersebut diisi menggunakan median untuk mengurangi pengaruh outlier.
 
-**Parameter yang Digunakan**:
-
-| Parameter | Nilai | Keterangan |
-|---|---|---|
-| `n_estimators` | 300 | Jumlah iterasi boosting |
-| `learning_rate` | 0.05 | Laju pembelajaran untuk setiap iterasi |
-| `max_depth` | 6 | Kedalaman maksimum setiap pohon |
-| `subsample` | 0.8 | Proporsi sampel yang digunakan per iterasi |
-| `colsample_bytree` | 0.8 | Proporsi fitur yang digunakan per pohon |
-| `random_state` | 42 | Seed untuk reproduktibilitas |
-
-**Kelebihan**: Umumnya menghasilkan akurasi lebih tinggi, memiliki mekanisme regularisasi bawaan untuk mencegah overfitting.  
-**Kekurangan**: Lebih banyak hyperparameter yang perlu di-tuning dan lebih rentan terhadap overfitting jika tidak dikonfigurasi dengan baik.
-
----
-
-## Evaluation
-
-### Metrik Evaluasi
-
-Untuk mengevaluasi performa model, digunakan tiga metrik berikut:
-
-- **RMSE (Root Mean Squared Error)**: Mengukur akar dari rata-rata kuadrat selisih antara nilai prediksi dan nilai aktual. Metrik ini memberikan penalti lebih besar pada kesalahan prediksi yang besar, sehingga sensitif terhadap outlier. Nilai yang lebih kecil menunjukkan model yang lebih baik.
-
-$$RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}$$
-
-- **MAE (Mean Absolute Error)**: Mengukur rata-rata nilai absolut selisih antara prediksi dan aktual. MAE lebih mudah diinterpretasikan secara langsung karena berada dalam satuan yang sama dengan target (USD).
-
-$$MAE = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|$$
-
-- **R² Score (Coefficient of Determination)**: Mengukur proporsi variansi pada variabel target yang dapat dijelaskan oleh model. Nilai R² mendekati 1.0 menunjukkan model yang sangat baik.
-
-$$R^2 = 1 - \frac{\sum(y_i - \hat{y}_i)^2}{\sum(y_i - \bar{y})^2}$$
-
-### Hasil Evaluasi
-
-| Metrik | Nilai |
-|---|---|
-| RMSE | 43.571 |
-| MAE | 29.102 |
-| R² Score | 0.8490 |
-
-Model XGBoost berhasil mencapai R² Score sebesar **0.8490**, yang berarti model mampu menjelaskan sekitar **84,9% variansi** nilai hunian berdasarkan fitur-fitur geografis dan sosial ekonomi yang digunakan. Nilai RMSE sebesar 43.571 menunjukkan rata-rata kesalahan prediksi yang relatif kecil dibandingkan rentang nilai hunian dalam dataset.
-
-**Visualisasi Prediksi vs Aktual (XGBoost)**:
-
-Plot di bawah ini menunjukkan hubungan antara nilai aktual dan nilai prediksi dari model XGBoost terbaik. Garis merah putus-putus merepresentasikan garis ideal (y = x).
-
-![Prediksi vs Aktual](https://via.placeholder.com/700x500?text=Scatter+Plot+Prediksi+vs+Nilai+Aktual)
-
-- Sebagian besar titik data terkonsentrasi di sekitar garis ideal, menunjukkan performa prediksi yang baik.
-- Terdapat beberapa titik yang menyimpang jauh dari garis ideal, terutama pada nilai hunian yang sangat tinggi (di atas 400.000 USD), yang kemungkinan disebabkan oleh efek *capping* pada data asli.
-
-**Analisis Feature Importance**:
-
-Berdasarkan analisis *feature importance* dari model XGBoost, diketahui bahwa fitur paling berpengaruh terhadap nilai hunian adalah:
-
-1. `median_income` — kontribusi terbesar (~48%), mengkonfirmasi bahwa faktor sosial ekonomi berupa tingkat pendapatan merupakan prediktor dominan.
-2. `latitude` dan `longitude` — secara gabungan berkontribusi ~18%, menunjukkan pengaruh signifikan faktor geografis.
-3. `ocean_proximity_NEAR BAY` dan `ocean_proximity_INLAND` — berkontribusi ~10%, mengindikasikan bahwa kedekatan dengan perairan secara signifikan mempengaruhi nilai properti.
-4. `housing_median_age` — kontribusi ~8%, menunjukkan bahwa usia bangunan juga menjadi pertimbangan penting.
-
-![Feature Importance](https://via.placeholder.com/700x450?text=Bar+Chart+Feature+Importance)
-
-### Dampak terhadap Business Understanding
-
-- **Problem Statement**: Model XGBoost berhasil menjawab permasalahan yang diajukan dengan memprediksi nilai hunian secara akurat (R² = 0.8490). Analisis *feature importance* juga memberikan wawasan kuantitatif mengenai faktor-faktor yang paling berpengaruh terhadap nilai hunian.
-
-- **Goals**: Tujuan mengidentifikasi faktor geografis dan sosial ekonomi yang berpengaruh telah tercapai. Ditemukan bahwa `median_income` (faktor sosial ekonomi) dan koordinat geografis merupakan prediktor terkuat, selaras dengan hipotesis awal.
-
-- **Solution Statement**: Model XGBoost menghasilkan RMSE = 43.571 dan R² = 0.8490, membuktikan bahwa algoritma ini efektif dan dapat diandalkan sebagai alat bantu estimasi nilai properti berbasis data.
-
----
-
-## Deployment
-
-### Strategi Deployment
-
-Model XGBoost yang telah dilatih di-*deploy* sebagai layanan web API menggunakan **Flask** sebagai backend framework, yang kemudian dibungkus dalam **Docker** untuk memastikan konsistensi environment di berbagai platform. Antarmuka pengguna dibangun menggunakan **Streamlit** agar dapat diakses langsung melalui browser tanpa instalasi tambahan.
-
-### Arsitektur Deployment
-
-```
-User (Browser)
-     │
-     ▼
-Streamlit Frontend  ──►  Flask REST API  ──►  XGBoost Model (.pkl)
-     │                        │
-     │                   Preprocessing
-     │                  (StandardScaler,
-     │                  OneHotEncoder)
-     │
-     ▼
-  Prediksi Nilai Hunian (USD)
+```python
+df['total_bedrooms'] = df['total_bedrooms'].fillna(
+    df['total_bedrooms'].median()
+)
 ```
 
-### Langkah-langkah Deployment
+## 3.2 Encoding Categorical Data
 
-**1. Menyimpan Model dan Preprocessor**
+Kolom `ocean_proximity` merupakan fitur kategorikal sehingga perlu dikonversi menjadi numerik menggunakan One-Hot Encoding.
 
-Setelah model selesai dilatih, model dan objek preprocessor disimpan menggunakan `joblib` agar dapat dimuat kembali saat inferensi tanpa perlu melatih ulang.
+```python
+df = pd.get_dummies(
+    df,
+    columns=['ocean_proximity'],
+    drop_first=True,
+    dtype=int
+)
+```
+
+## 3.3 Feature-Target Split
+
+Target yang akan diprediksi adalah `median_house_value`.
+
+```python
+X = df.drop(columns=['median_house_value'])
+y = df['median_house_value']
+```
+
+## 3.4 Train-Test Split
+
+Dataset dibagi menjadi data pelatihan dan data pengujian dengan rasio 80:20.
+
+```python
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+```
+
+## 3.5 Feature Scaling
+
+Standarisasi fitur dilakukan menggunakan `StandardScaler`.
+
+```python
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+```
+
+---
+
+# 4. Modeling
+
+Pada tahap ini dilakukan pelatihan model menggunakan algoritma **LightGBM Regressor** sebagai salah satu pendekatan Gradient Boosting.
+
+## 4.1 Model Training
+
+```python
+import lightgbm as lgb
+
+model = lgb.LGBMRegressor(
+    n_estimators=150,
+    learning_rate=0.05,
+    random_state=42
+)
+
+model.fit(X_train_scaled, y_train)
+```
+
+## 4.2 Prediction
+
+Setelah model selesai dilatih, dilakukan prediksi terhadap data pengujian.
+
+```python
+y_pred = model.predict(X_test_scaled)
+```
+
+---
+
+# 5. Evaluation
+
+Evaluasi model dilakukan menggunakan beberapa metrik berikut:
+
+### RMSE (Root Mean Squared Error)
+
+Mengukur rata-rata kesalahan prediksi dalam satuan dolar ($). Semakin kecil nilainya, semakin baik performa model.
+
+### MAE (Mean Absolute Error)
+
+Mengukur rata-rata selisih absolut antara nilai aktual dan nilai prediksi.
+
+### R² Score (Coefficient of Determination)
+
+Mengukur seberapa besar variasi data yang dapat dijelaskan oleh model. Nilai mendekati 1 menunjukkan performa yang semakin baik.
+
+## 5.1 Hasil Evaluasi Model LightGBM
+
+```text
+=============================================
+               HASIL EVALUASI
+=============================================
+Root Mean Squared Error (RMSE) : $48,528.94
+R-squared Score (R2 Score)     : 0.8203 (82.03%)
+=============================================
+```
+
+### Interpretasi
+
+* **RMSE ≈ $48,529** menunjukkan bahwa rata-rata kesalahan prediksi model sebesar sekitar $48.529 dari nilai sebenarnya.
+* **R² ≈ 82.03%** menunjukkan bahwa model mampu menjelaskan sekitar 82.03% variasi nilai hunian berdasarkan fitur yang tersedia.
+
+## 5.2 Visualisasi Evaluasi
+
+Visualisasi **Actual vs Predicted** menunjukkan sebagian besar titik data berada di sekitar garis diagonal (`y = x`). Hal ini mengindikasikan bahwa model memiliki kemampuan prediksi yang cukup baik dan tidak menunjukkan bias sistematis yang signifikan.
+
+> Hasil visualisasi dapat dilihat pada notebook proyek.
+
+## 5.3 Perbandingan Model
+
+Berdasarkan hasil analisis:
+
+* Faktor geografis dan sosial ekonomi, khususnya `median_income` dan `ocean_proximity`, memiliki pengaruh yang signifikan terhadap nilai hunian.
+* Model XGBoost secara umum menghasilkan performa terbaik berdasarkan metrik evaluasi yang digunakan.
+* Model LightGBM juga menunjukkan performa yang kompetitif dengan nilai R² mencapai 82.03%.
+
+### Kesimpulan
+
+Model berbasis Gradient Boosting (XGBoost dan LightGBM) memberikan performa yang lebih baik dibandingkan model baseline maupun Random Forest dalam memprediksi nilai hunian California.
+
+---
+
+# 6. Deployment
+
+Model yang telah dilatih dapat diimplementasikan ke dalam aplikasi prediksi harga rumah.
+
+## 6.1 Menyimpan Model
 
 ```python
 import joblib
 
-# Simpan model dan scaler
-joblib.dump(xgb_model, 'model/xgboost_model.pkl')
-joblib.dump(scaler, 'model/scaler.pkl')
-joblib.dump(encoder, 'model/encoder.pkl')
+joblib.dump(model, 'house_price_model.pkl')
+joblib.dump(scaler, 'scaler.pkl')
 ```
 
-**2. Membangun REST API dengan Flask**
+## 6.2 Membuat Aplikasi Prediksi
 
-Endpoint `/predict` menerima data input dalam format JSON, melakukan preprocessing, dan mengembalikan hasil prediksi nilai hunian.
+Model dapat diintegrasikan ke:
+
+* Flask API
+* FastAPI
+* Streamlit Web Application
+
+Contoh penggunaan model yang telah disimpan:
 
 ```python
-from flask import Flask, request, jsonify
 import joblib
-import numpy as np
 
-app = Flask(__name__)
+loaded_model = joblib.load('house_price_model.pkl')
+loaded_scaler = joblib.load('scaler.pkl')
 
-model  = joblib.load('model/xgboost_model.pkl')
-scaler = joblib.load('model/scaler.pkl')
-encoder = joblib.load('model/encoder.pkl')
+new_data = [[
+    -122.23,
+    37.88,
+    41.0,
+    880.0,
+    129.0,
+    322.0,
+    8.3252,
+    1.0,
+    0.0,
+    0.0,
+    0.0
+]]
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    data = request.get_json()
-    features = preprocess(data)
-    prediction = model.predict(features)
-    return jsonify({'predicted_house_value': round(float(prediction[0]), 2)})
+new_data_scaled = loaded_scaler.transform(new_data)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+prediction = loaded_model.predict(new_data_scaled)
+
+print(f"Predicted House Value: ${prediction[0]:,.2f}")
 ```
 
-**3. Kontainerisasi dengan Docker**
+## 6.3 Monitoring Model
 
-Seluruh aplikasi dikemas dalam Docker container untuk memastikan environment yang konsisten antara pengembangan dan produksi.
+Setelah deployment, performa model perlu dipantau secara berkala untuk mendeteksi:
 
-```dockerfile
-FROM python:3.10-slim
+* Model Drift
+* Data Drift
+* Penurunan performa prediksi
 
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-EXPOSE 5000
-
-CMD ["python", "app.py"]
-```
-
-**4. Antarmuka Pengguna dengan Streamlit**
-
-Antarmuka berbasis web dibangun menggunakan Streamlit, memungkinkan pengguna memasukkan data geografis dan sosial ekonomi secara interaktif dan mendapatkan estimasi nilai hunian secara real-time.
-
-```python
-import streamlit as st
-import requests
-
-st.title('Prediksi Nilai Hunian')
-st.subheader('Masukkan Data Geografis & Sosial Ekonomi')
-
-median_income     = st.slider('Median Income (dalam $10.000)', 0.5, 15.0, 3.0)
-housing_median_age = st.slider('Median Usia Bangunan (tahun)', 1, 52, 20)
-latitude          = st.number_input('Latitude', value=34.05)
-longitude         = st.number_input('Longitude', value=-118.25)
-ocean_proximity   = st.selectbox('Kedekatan dengan Laut',
-                                  ['NEAR BAY', 'INLAND', '<1H OCEAN', 'NEAR OCEAN', 'ISLAND'])
-
-if st.button('Prediksi'):
-    payload = {
-        'median_income': median_income,
-        'housing_median_age': housing_median_age,
-        'latitude': latitude,
-        'longitude': longitude,
-        'ocean_proximity': ocean_proximity
-    }
-    response = requests.post('http://localhost:5000/predict', json=payload)
-    result = response.json()
-    st.success(f"Estimasi Nilai Hunian: **${result['predicted_house_value']:,.0f}**")
-```
-
-### Monitoring dan Pemeliharaan
-
-Setelah model di-deploy, dilakukan pemantauan secara berkala untuk mendeteksi potensi *model drift* akibat perubahan kondisi pasar properti. Langkah pemeliharaan yang direncanakan meliputi:
-
-- **Monitoring performa**: Mencatat prediksi vs nilai aktual secara berkala untuk mendeteksi penurunan akurasi.
-- **Retraining berkala**: Model diperbarui setiap kuartal menggunakan data terbaru agar tetap relevan dengan kondisi pasar.
-- **Versioning model**: Setiap versi model disimpan dengan timestamp menggunakan konvensi penamaan `xgboost_model_vYYYYMMDD.pkl` untuk memudahkan rollback jika diperlukan.
+Jika ditemukan perubahan pola data yang signifikan, model perlu dilatih ulang menggunakan data terbaru agar tetap akurat.
 
 ---
 
-## Kesimpulan
+# Kesimpulan Akhir
 
-Proyek ini berhasil membangun model prediksi nilai hunian berbasis faktor geografis dan sosial ekonomi menggunakan algoritma XGBoost Regressor. Model yang dikembangkan mencapai performa yang baik dengan nilai R² sebesar 0.8490, RMSE sebesar 43.571, dan MAE sebesar 29.102.
+Proyek ini berhasil membangun model machine learning untuk memprediksi nilai hunian di California berdasarkan faktor geografis dan sosial ekonomi. Hasil analisis menunjukkan bahwa pendapatan median (`median_income`) dan kedekatan terhadap laut (`ocean_proximity`) merupakan faktor yang paling berpengaruh terhadap nilai rumah.
 
-Temuan utama dari analisis ini mengkonfirmasi bahwa **faktor sosial ekonomi**, khususnya tingkat pendapatan median masyarakat, merupakan penentu nilai hunian yang paling dominan. Sementara itu, **faktor geografis** seperti lokasi (koordinat dan kedekatan dengan laut) turut memainkan peran penting sebagai prediktor sekunder. Wawasan ini dapat dimanfaatkan oleh pengembang properti dalam strategi penetapan harga, oleh pemerintah daerah dalam perencanaan tata ruang berbasis data, serta oleh masyarakat umum sebagai panduan dalam pengambilan keputusan investasi properti.
-
-Untuk penelitian selanjutnya, disarankan untuk mempertimbangkan penambahan fitur-fitur seperti akses terhadap transportasi publik, kualitas sekolah terdekat, dan tingkat kriminalitas wilayah yang berpotensi meningkatkan akurasi model lebih lanjut.
+Model LightGBM menghasilkan performa yang baik dengan nilai **RMSE sebesar $48,528.94** dan **R² Score sebesar 82.03%**, sehingga layak digunakan sebagai sistem prediksi harga hunian pada studi kasus ini.
