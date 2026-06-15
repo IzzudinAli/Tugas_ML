@@ -222,7 +222,7 @@ Model **XGBoost Regressor** yang telah dikembangkan diintegrasikan langsung ke d
 Aplikasi memanfaatkan fitur `@st.cache_data` dari Streamlit untuk memuat data `housing.csv` dan melatih model XGBoost secara langsung (*on-the-fly*) di sisi server cloud saat aplikasi pertama kali dimuat. Pendekatan ini dipilih untuk mengeliminasi ketergantungan pada file *pickle* (`.pkl`) eksternal yang rentan terhadap masalah kompatibilitas versi library antara lingkungan lokal dan lingkungan produksi.
 
 Aplikasi prediksi ini dapat diakses secara publik melalui tautan Hugging Face Spaces berikut:
-![Link_Hungging_Face](https://izzudinaliipeh-housing.hf.space)
+[Link_Hungging_Face](https://izzudinaliipeh-housing.hf.space)
 
 ### 6.2 Alur Integrasi Kode (`app.py`)
 Seluruh logika *data preparation* (penanganan *missing values* dengan median, *one-hot encoding* untuk fitur kategorikal `ocean_proximity`, dan *standard scaling*) serta proses inferensi disatukan di dalam berkas utama `app.py`. Berikut adalah implementasi pemrosesan data masukan pengguna dan prediksi nilai hunian secara *real-time*:
