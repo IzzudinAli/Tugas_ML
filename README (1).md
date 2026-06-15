@@ -212,67 +212,50 @@ Model berbasis Gradient Boosting (XGBoost dan LightGBM) memberikan performa yang
 
 ---
 
-# 6. Deployment
+## 6. Deployment
 
-Model yang telah dilatih dapat diimplementasikan ke dalam aplikasi prediksi harga rumah.
+Proyek ini menerapkan strategi deployment berbasis cloud yang mengintegrasikan repositori **GitHub** sebagai kontrol versi dan **Hugging Face Spaces** sebagai platform *hosting* aplikasi web interaktif.
 
-## 6.1 Menyimpan Model
+### 6.1 Strategi & Arsitektur Deployment
+Model **XGBoost Regressor** yang telah dikembangkan diintegrasikan langsung ke dalam antarmuka web menggunakan framework **Streamlit**. Berbeda dengan pendekatan tradisional yang memisahkan backend (API) dan frontend secara terpisah, aplikasi ini dirancang secara monolitik dan efisien. 
 
-```python
-import joblib
+Aplikasi memanfaatkan fitur `@st.cache_data` dari Streamlit untuk memuat data `housing.csv` dan melatih model XGBoost secara langsung (*on-the-fly*) di sisi server cloud saat aplikasi pertama kali dimuat. Pendekatan ini dipilih untuk mengeliminasi ketergantungan pada file *pickle* (`.pkl`) eksternal yang rentan terhadap masalah kompatibilitas versi library antara lingkungan lokal dan lingkungan produksi.
 
-joblib.dump(model, 'house_price_model.pkl')
-joblib.dump(scaler, 'scaler.pkl')
-```
+Aplikasi prediksi ini dapat diakses secara publik melalui tautan Hugging Face Spaces berikut:
+![Link_Hungging_Face](https://izzudinaliipeh-housing.hf.space)
 
-## 6.2 Membuat Aplikasi Prediksi
-
-Model dapat diintegrasikan ke:
-
-* Flask API
-* FastAPI
-* Streamlit Web Application
-
-Contoh penggunaan model yang telah disimpan:
+### 6.2 Alur Integrasi Kode (`app.py`)
+Seluruh logika *data preparation* (penanganan *missing values* dengan median, *one-hot encoding* untuk fitur kategorikal `ocean_proximity`, dan *standard scaling*) serta proses inferensi disatukan di dalam berkas utama `app.py`. Berikut adalah implementasi pemrosesan data masukan pengguna dan prediksi nilai hunian secara *real-time*:
 
 ```python
-import joblib
-
-loaded_model = joblib.load('house_price_model.pkl')
-loaded_scaler = joblib.load('scaler.pkl')
-
-new_data = [[
-    -122.23,
-    37.88,
-    41.0,
-    880.0,
-    129.0,
-    322.0,
-    8.3252,
-    1.0,
-    0.0,
-    0.0,
-    0.0
-]]
-
-new_data_scaled = loaded_scaler.transform(new_data)
-
-prediction = loaded_model.predict(new_data_scaled)
-
-print(f"Predicted House Value: ${prediction[0]:,.2f}")
-```
-
-## 6.3 Monitoring Model
-
-Setelah deployment, performa model perlu dipantau secara berkala untuk mendeteksi:
-
-* Model Drift
-* Data Drift
-* Penurunan performa prediksi
-
-Jika ditemukan perubahan pola data yang signifikan, model perlu dilatih ulang menggunakan data terbaru agar tetap akurat.
-
----
+# Proses enkapsulasi prediksi di dalam Streamlit app.py
+if st.button("🔮 Estimasi Nilai Jual Hunian", type="primary"):
+    # Membuat struktur DataFrame kosong yang identik dengan fitur training
+    input_data = pd.DataFrame(0, index=[0], columns=feature_columns)
+    
+    # Memetakan nilai numerik dasar dari komponen UI Streamlit
+    input_data['longitude'] = longitude
+    input_data['latitude'] = latitude
+    input_data['housing_median_age'] = housing_age
+    input_data['total_rooms'] = total_rooms
+    input_data['total_bedrooms'] = total_bedrooms
+    input_data['population'] = population
+    input_data['households'] = households
+    input_data['median_income'] = med_income
+    
+    # Memetakan nilai kategorikal ke bentuk One-Hot Encoding biner
+    dummy_col = f"ocean_proximity_{ocean_prox}"
+    if dummy_col in input_data.columns:
+        input_data[dummy_col] = 1
+        
+    # Standardisasi data masukan baru menggunakan StandardScaler yang telah dilatih
+    input_scaled = scaler.transform(input_data)
+    
+    # Melakukan inferensi harga rumah menggunakan model XGBoost
+    prediction = model.predict(input_scaled)[0]
+    
+    # Menampilkan hasil estimasi akhir kepada pengguna
+    st.success(f"### 💵 Estimasi Nilai Hunian: **${prediction:,.2f}**")
 
 # Kesimpulan Akhir
 
